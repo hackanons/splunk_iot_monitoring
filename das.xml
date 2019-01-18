@@ -1,0 +1,134 @@
+<form theme="light">
+  <label>IOT MONITOR</label>
+  <description>Dashboard for Monitoring IOT devices</description>
+  <fieldset submitButton="false"></fieldset>
+  <row depends="$hidden$">
+    <panel>
+      <input type="dropdown" token="new_panel" searchWhenChanged="true">
+        <label></label>
+        <choice value="$new$">$new$</choice>
+        <default>$new$</default>
+        <change>
+          <condition value="ON">
+            <set token="new_panel1">true</set>
+          </condition>
+          <condition value="OFF">
+            <unset token="new_panel1"></unset>
+          </condition>
+        </change>
+      </input>
+    </panel>
+  </row>
+  <row>
+    <panel>
+      <title>IOT Device Status $new|s$--$new_panel1|s$</title>
+      <single>
+        <search>
+          <query>index="main" | stats count(message_recieved) as data |eval newfield=if(data=0,"OFF","ON") | fields newfield</query>
+          <earliest>rt-1m</earliest>
+          <latest>rtnow</latest>
+          <sampleRatio>1</sampleRatio>
+          <progress>
+            <condition>
+              <set token="new">$result.newfield$</set>
+            </condition>
+          </progress>
+        </search>
+        <option name="colorBy">value</option>
+        <option name="colorMode">block</option>
+        <option name="drilldown">none</option>
+        <option name="numberPrecision">0</option>
+        <option name="rangeColors">["0x53a051","0x0877a6","0xf8be34","0xf1813f","0xdc4e41"]</option>
+        <option name="rangeValues">[0,30,70,100]</option>
+        <option name="refresh.display">progressbar</option>
+        <option name="showSparkline">1</option>
+        <option name="showTrendIndicator">1</option>
+        <option name="trellis.enabled">0</option>
+        <option name="trellis.scales.shared">1</option>
+        <option name="trellis.size">medium</option>
+        <option name="trendColorInterpretation">standard</option>
+        <option name="trendDisplayMode">absolute</option>
+        <option name="unitPosition">after</option>
+        <option name="useColors">0</option>
+        <option name="useThousandSeparators">1</option>
+      </single>
+    </panel>
+    <panel depends="$new_panel1$">
+      <title>Sensor False Alarms</title>
+      <single>
+        <search>
+          <query>index="main" | head limit=0| anomalydetection |where message_recieved&gt;2000| stats count</query>
+          <earliest>rt-2m</earliest>
+          <latest>rtnow</latest>
+          <sampleRatio>1</sampleRatio>
+        </search>
+        <option name="colorBy">value</option>
+        <option name="colorMode">block</option>
+        <option name="drilldown">none</option>
+        <option name="height">173</option>
+        <option name="numberPrecision">0</option>
+        <option name="rangeColors">["0x53a051","0xf8be34","0xdc4e41"]</option>
+        <option name="rangeValues">[0,5]</option>
+        <option name="refresh.display">progressbar</option>
+        <option name="showSparkline">1</option>
+        <option name="showTrendIndicator">1</option>
+        <option name="trellis.enabled">0</option>
+        <option name="trellis.scales.shared">1</option>
+        <option name="trellis.size">medium</option>
+        <option name="trendColorInterpretation">standard</option>
+        <option name="trendDisplayMode">absolute</option>
+        <option name="underLabel">Sensor Outrage in 2 minutes</option>
+        <option name="unitPosition">after</option>
+        <option name="useColors">1</option>
+        <option name="useThousandSeparators">1</option>
+      </single>
+    </panel>
+  </row>
+  <row>
+    <panel>
+      <title>Network Status</title>
+      <single>
+        <search>
+          <query>|script print $new$ | stats last</query>
+          <earliest>rt-1m</earliest>
+          <latest>rt</latest>
+          <sampleRatio>1</sampleRatio>
+          <refresh>30s</refresh>
+          <refreshType>delay</refreshType>
+        </search>
+        <option name="drilldown">none</option>
+        <option name="refresh.display">progressbar</option>
+      </single>
+    </panel>
+    <panel depends="$new_panel1$">
+      <title>Object distance from Sensor</title>
+      <single>
+        <search>
+          <query>index="main" | timechart span=2m values(message_recieved) as Distance | mvexpand Distance</query>
+          <earliest>rt-5m</earliest>
+          <latest>rt</latest>
+          <sampleRatio>1</sampleRatio>
+        </search>
+        <option name="colorBy">value</option>
+        <option name="colorMode">none</option>
+        <option name="drilldown">none</option>
+        <option name="height">147</option>
+        <option name="numberPrecision">0</option>
+        <option name="rangeColors">["0x53a051","0x0877a6","0xf8be34","0xf1813f","0xdc4e41"]</option>
+        <option name="rangeValues">[0,30,70,100]</option>
+        <option name="refresh.display">progressbar</option>
+        <option name="showSparkline">1</option>
+        <option name="showTrendIndicator">1</option>
+        <option name="trellis.enabled">0</option>
+        <option name="trellis.scales.shared">1</option>
+        <option name="trellis.size">medium</option>
+        <option name="trendColorInterpretation">standard</option>
+        <option name="trendDisplayMode">absolute</option>
+        <option name="underLabel">ObstacleDistance</option>
+        <option name="unitPosition">after</option>
+        <option name="useColors">0</option>
+        <option name="useThousandSeparators">1</option>
+      </single>
+    </panel>
+  </row>
+</form>
